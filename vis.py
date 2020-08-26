@@ -15,7 +15,7 @@ def create_log_at(file_path, current_env, new_env=None):
     data = json.loads(vis.get_window_data())
     if len(data) == 0:
         print("NOTHING HAS BEEN SAVED: NOTHING IN THIS ENV - DOES IT EXIST ?")
-        return
+        return False
 
     file = open(file_path, 'w+')
     for datapoint in data.values():
@@ -38,6 +38,8 @@ def create_log_at(file_path, current_env, new_env=None):
         to_write = json.dumps(["events", output])
         file.write(to_write + '\n')
     file.close()
+
+    return True
 
 
 def create_log(current_env, new_env=None):
@@ -79,14 +81,19 @@ if __name__ == '__main__':
 
     if args.save is not '':
         if args.file is not '':
-            create_log_at(args.file, args.save)
+            i = 0
+            while create_log_at(args.file + "_" + str(i), args.save + "_" + str(i)):
+                i += 1
+
         else:
             create_log(args.save)
 
     if args.load is not '':
         if args.load == 'all':
             load_all_log()
+        elif args.file is not '':
+            for file in [os.path.join(args.file, x) for x in os.listdir(args.file)]:
+                load_log_at(file)
         elif args.load is not None:
             load_log(args.load)
-        elif args.file is not '':
-            load_log_at(args.file)
+        
